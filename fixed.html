@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IME Issue Demo (Fixed)</title>
+  <style>
+    body { font-family: sans-serif; padding: 2em; }
+    input { font-size: 1.2em; padding: 0.5em; margin-bottom: 1em; width: 400px; }
+    button { font-size: 1.2em; padding: 0.5em 1em; }
+    #output { margin-top: 2em; border-top: 1px solid #ccc; padding-top: 1em; }
+    .submission { border: 1px solid #eee; padding: 1em; margin-bottom: 1em; background-color: #f9f9f9; }
+  </style>
+</head>
+<body>
+  <h1>IME Form Submission Issue (Fixed)</h1>
+  <p>This version fixes the forced submission by checking <code>event.isComposing</code>.</p>
+  <p><b>Steps to test:</b></p>
+  <ol>
+    <li>Switch to a Japanese IME.</li>
+    <li>Type a word like "nihongo" in the comment field.</li>
+    <li>Press <b>Enter</b> to confirm the conversion.</li>
+    <li><b>Observe:</b> The form <b>does NOT submit</b> because <code>isComposing</code> is true.</li>
+    <li>Press <b>Enter</b> again.</li>
+    <li><b>Observe:</b> The form now submits as expected.</li>
+  </ol>
+  <form id="myForm">
+    <input type="text" name="comment" placeholder="Comment">
+    <br>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="output">
+    <h2>Submissions</h2>
+  </div>
+
+  <script>
+    const form = document.getElementById('myForm');
+    const input = form.querySelector('input');
+    const outputDiv = document.getElementById('output');
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        // Always prevent the default Enter key action.
+        event.preventDefault();
+
+        // ONLY submit if an IME is NOT actively composing.
+        if (!event.isComposing) {
+          form.requestSubmit();
+        }
+      }
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      
+      const formData = new FormData(form);
+      const comment = formData.get('comment');
+
+      const submissionEl = document.createElement('div');
+      submissionEl.classList.add('submission');
+      submissionEl.innerHTML = `
+        <p><strong>Comment:</strong> ${comment}</p>
+        <p><small>Submitted at: ${new Date().toLocaleTimeString()}</small></p>
+      `;
+      
+      outputDiv.appendChild(submissionEl);
+      form.reset();
+    });
+  </script>
+</body>
+</html>
